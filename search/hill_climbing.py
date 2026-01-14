@@ -28,8 +28,9 @@ import copy
 from typing import Dict, Any, List, Tuple, Optional
 
 import numpy as np
+from tqdm import tqdm
 
-from envs.highway_env_utils import run_episode
+from envs.highway_env_utils import run_episode, record_video_episode
 
 
 # ============================================================
@@ -59,7 +60,38 @@ def compute_objectives_from_time_series(time_series: List[Dict[str, Any]]) -> Di
     but keep the keys above at least.
     """
     # TODO (students)
-    raise NotImplementedError
+    crashed = 0
+    min_dist = float("inf")
+
+    for frame in time_series:
+        if frame.get("crashed", False):
+            crashed = 1
+
+        ego = frame.get("ego", None)
+        if ego is None:
+            continue
+        pos_ego = ego.get("pos", None)
+        if pos_ego is None:
+            continue
+
+        others = frame.get("others", [])
+        if not others:
+            continue
+
+        for o in others:
+            pos_o = o.get("pos", None)
+            if pos_o is None:
+                continue
+            dx = pos_o[0] - pos_ego[0]
+            dy = pos_o[1] - pos_ego[1]
+            d = (dx * dx + dy * dy) ** 0.5
+            if d < min_dist:
+                min_dist = d
+
+    return {
+        "crashed": crashed,
+        "min_euclidean_distance": min_dist
+    }
 
 
 def compute_fitness(objectives: Dict[str, Any]) -> float:
@@ -76,7 +108,11 @@ def compute_fitness(objectives: Dict[str, Any]) -> float:
     You can design a more refined scalarization if desired.
     """
     # TODO (students)
-    raise NotImplementedError
+    if objectives["crashed"] == 1:
+        fitness = - 1.0
+    else:
+        fitness = objectives["min_euclidean_distance"]
+    return fitness
 
 
 # ============================================================
@@ -84,9 +120,9 @@ def compute_fitness(objectives: Dict[str, Any]) -> float:
 # ============================================================
 
 def mutate_config(
-    cfg: Dict[str, Any],
-    param_spec: Dict[str, Any],
-    rng: np.random.Generator
+        cfg: Dict[str, Any],
+        param_spec: Dict[str, Any],
+        rng: np.random.Generator
 ) -> Dict[str, Any]:
     """
     Generate ONE neighbor configuration by mutating the current scenario.
@@ -106,8 +142,59 @@ def mutate_config(
       - multiple-parameter mutation
       - adaptive step sizes, etc.
     """
+    # single parameter mutation
+    mod_cfg = copy.deepcopy(cfg)
+    keys = ["vehicles_count", "lanes_count", "initial_spacing", "ego_spacing", "initial_lane_id"]
+
+    k = rng.choice(keys)
+    s = param_spec[k]
+    if s["type"] == "int":
+        new_v = int(rng.integers(s["min"], s["max"] + 1))
+        if new_v == mod_cfg[k]:
+            new_v = int(rng.integers(s["min"], s["max"] + 1))
+    else:
+        new_v = float(rng.uniform(s["min"], s["max"]))
+        if abs(new_v - float(mod_cfg[k])) < 1e-6:
+            new_v = float(rng.uniform(s["min"], s["max"]))
+
+    mod_cfg[k] = new_v
+
+    if k == "lanes_count":
+        mod_cfg["initial_lane_id"] = int(np.clip(mod_cfg.get("initial_lane_id", 0), 0, mod_cfg["lanes_count"] - 1))
+
+    if k == "initial_lane_id":
+        lanes = int(mod_cfg.get("lanes_count", 3))
+        mod_cfg["initial_lane_id"] = int(np.clip(mod_cfg["initial_lane_id"], 0, lanes - 1))
+
+    return mod_cfg
     # TODO (students)
-    raise NotImplementedError
+    # raise NotImplementedError
+
+
+def sample_random_config(base_cfg, param_spec, rng):
+    cfg = {}
+    lanes = None
+    if "lanes_count" in param_spec:
+        s = param_spec["lanes_count"]
+        lanes = int(rng.integers(s["min"], s["max"] + 1))
+        cfg["lanes_count"] = lanes
+
+    for k, s in param_spec.items():
+        if k == "lanes_count":
+            continue
+        if k == "initial_lane_id":
+            lanes = lanes or 3
+            cfg[k] = int(rng.integers(0, lanes))
+            continue
+        if s["type"] == "int":
+            cfg[k] = int(rng.integers(s["min"], s["max"] + 1))
+        elif s["type"] == "float":
+            cfg[k] = float(rng.uniform(s["min"], s["max"]))
+
+    for k, v in base_cfg.items():
+        if k not in cfg:
+            cfg[k] = v
+    return cfg
 
 
 # ============================================================
@@ -115,14 +202,14 @@ def mutate_config(
 # ============================================================
 
 def hill_climb(
-    env_id: str,
-    base_cfg: Dict[str, Any],
-    param_spec: Dict[str, Any],
-    policy,
-    defaults: Dict[str, Any],
-    seed: int = 0,
-    iterations: int = 100,
-    neighbors_per_iter: int = 10,
+        env_id: str,
+        base_cfg: Dict[str, Any],
+        param_spec: Dict[str, Any],
+        policy,
+        defaults: Dict[str, Any],
+        seed: int = 0,
+        iterations: int = 100,
+        neighbors_per_iter: int = 10,
 ) -> Dict[str, Any]:
     """
     Hill climbing loop.
@@ -156,7 +243,7 @@ def hill_climb(
     rng = np.random.default_rng(seed)
 
     # TODO (students): choose initialization (base_cfg or random scenario)
-    current_cfg = dict(base_cfg)
+    current_cfg = sample_random_config(base_cfg, param_spec, rng)
 
     # Evaluate initial solution (seed_base used for reproducibility)
     seed_base = int(rng.integers(1e9))
@@ -172,10 +259,39 @@ def hill_climb(
     history = [best_fit]
 
     # TODO (students): implement HC loop
+
+    for i in tqdm(range(iterations), desc="Running Hill Climbing Iterations"):
+        for j in range(neighbors_per_iter):
+            neighbor_seed = int(rng.integers(1e9))
+            neighbor_cfg = mutate_config(current_cfg, param_spec, rng)
+            crashed, ts = run_episode(env_id, neighbor_cfg, policy, defaults, neighbor_seed)
+            objectives = compute_objectives_from_time_series(ts)
+            new_fit = compute_fitness(objectives)
+            if new_fit < best_fit:
+                best_fit = new_fit
+                best_cfg = neighbor_cfg
+                current_cfg = neighbor_cfg
+                best_obj = dict(objectives)
+                best_seed_base = neighbor_seed
+
+        history.append(best_fit)
+
+        if best_fit < 0:
+            print(f"💥 Collision: scenario {i}")
+            record_video_episode(env_id, best_cfg, policy, defaults, best_seed_base, out_dir="videos")
+            break
+
+    return {
+        "best_cfg": best_cfg,
+        "best_objectives": best_obj,
+        "best_fitness": best_fit,
+        "best_seed_base": best_seed_base,
+        "history": history,
+        "crashed": best_fit < 0
+    }
+
     # - generate neighbors
     # - evaluate
     # - pick best
     # - accept if improved
     # - early stop on crash (optional)
-
-    raise NotImplementedError
