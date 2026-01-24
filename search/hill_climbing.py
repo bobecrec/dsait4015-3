@@ -36,6 +36,36 @@ from envs.highway_env_utils import run_episode, record_video_episode
 # ============================================================
 # 1) OBJECTIVES FROM TIME SERIES
 # ============================================================
+def time_to_crash(x, y, vx, vy, v, carx, cary, w, l):
+    # Handle zero velocity
+    if v < 1e-6:
+        return float("inf")
+
+    # Normalize velocity direction
+    vx_norm = vx / v
+    vy_norm = vy / v
+
+    # Vector from ego to car
+    dx = carx - x
+    dy = cary - y
+
+    # Check if moving towards the car (dot product > 0)
+    dot = dx * vx_norm + dy * vy_norm
+    if dot <= 0:
+        return float("inf")
+
+    # Project velocity onto the vector to the car
+    # Then check distance to bounding box
+    # Simplified: use center-to-center distance minus half-dimensions
+    distance = (dx ** 2 + dy ** 2) ** 0.5
+    collision_distance = ((w / 2) ** 2 + (l / 2) ** 2) ** 0.5  # Conservative estimate
+
+    if distance < collision_distance:
+        return 0.0  # Already overlapping
+
+    # Time = distance / speed (projected)
+    return (distance - collision_distance) / v
+
 
 def compute_objectives_from_time_series(time_series: List[Dict[str, Any]]) -> Dict[str, Any]:
     """
@@ -62,6 +92,10 @@ def compute_objectives_from_time_series(time_series: List[Dict[str, Any]]) -> Di
     # TODO (students)
     crashed = 0
     min_dist = float("inf")
+    avg_min_dist = 0
+    max_neighboring_cars_ahead = 0
+    avg_neighbouring_cars_ahead = 0
+    min_crash_time = float('inf')
 
     for frame in time_series:
         if frame.get("crashed", False):
@@ -71,26 +105,57 @@ def compute_objectives_from_time_series(time_series: List[Dict[str, Any]]) -> Di
         if ego is None:
             continue
         pos_ego = ego.get("pos", None)
-        if pos_ego is None:
+        ego_lane = ego.get("lane_id", None)
+        if pos_ego is None or ego_lane is None:
             continue
+
+        vy = 1 / (np.tan(ego.get("heading", 0))**2+ 1)
+        vx = np.sqrt(1 - vy**2)
 
         others = frame.get("others", [])
         if not others:
             continue
 
+        # Count cars in neighboring lanes that are ahead of ego
+        neighboring_cars_ahead = 0
+
         for o in others:
             pos_o = o.get("pos", None)
-            if pos_o is None:
+            lane_o = o.get("lane_id", None)
+            if pos_o is None or lane_o is None:
                 continue
+
+            # Check if vehicle is in a neighboring lane (adjacent lane)
+            is_neighboring_lane = abs(lane_o - ego_lane) == 1
+
+            # Check if vehicle is ahead (x position greater than ego)
+            is_ahead = pos_o[0] > pos_ego[0]
+
+            if is_neighboring_lane and is_ahead:
+                neighboring_cars_ahead += 1
+
+            # Also compute minimum distance
             dx = pos_o[0] - pos_ego[0]
             dy = pos_o[1] - pos_ego[1]
             d = (dx * dx + dy * dy) ** 0.5
             if d < min_dist:
                 min_dist = d
 
+            crash = time_to_crash(pos_ego[0], pos_ego[1], vx, vy, ego.get("speed"), pos_o[0], pos_o[1], o.get("width"), o.get("length"))
+            if crash < min_crash_time:
+                min_crash_time = crash
+
+        avg_neighbouring_cars_ahead += neighboring_cars_ahead
+        # Track the maximum number of neighboring cars ahead across all frames
+        if neighboring_cars_ahead > max_neighboring_cars_ahead:
+            max_neighboring_cars_ahead = neighboring_cars_ahead
+
     return {
         "crashed": crashed,
-        "min_euclidean_distance": min_dist
+        "min_euclidean_distance": min_dist,
+        "max_neighboring_cars_ahead": max_neighboring_cars_ahead,
+        "avg_neighboring_cars_ahead": float(avg_neighbouring_cars_ahead) / len(time_series),
+        "min_crash_time": min_crash_time
     }
 
 
@@ -108,6 +173,7 @@ def compute_fitness(objectives: Dict[str, Any]) -> float:
     You can design a more refined scalarization if desired.
     """
     # TODO (students)
+    print(objectives)
     if objectives["crashed"] == 1:
         fitness = - 1.0
     else:
@@ -153,8 +219,8 @@ def mutate_config(
         if new_v == mod_cfg[k]:
             new_v = int(rng.integers(s["min"], s["max"] + 1))
     else:
-        new_v = float(rng.uniform(s["min"], s["max"]))
-        if abs(new_v - float(mod_cfg[k])) < 1e-6:
+        new_v = float(rng.normal(s["min"], s["max"]))
+        if abs(new_v - float(mod_cfg[k])) < abs(s["min"] - s["max"])/100:
             new_v = float(rng.uniform(s["min"], s["max"]))
 
     mod_cfg[k] = new_v
@@ -259,7 +325,7 @@ def hill_climb(
     history = [best_fit]
 
     # TODO (students): implement HC loop
-
+    crash = False
     for i in tqdm(range(iterations), desc="Running Hill Climbing Iterations"):
         for j in range(neighbors_per_iter):
             neighbor_seed = int(rng.integers(1e9))
@@ -267,20 +333,26 @@ def hill_climb(
             crashed, ts = run_episode(env_id, neighbor_cfg, policy, defaults, neighbor_seed)
             objectives = compute_objectives_from_time_series(ts)
             new_fit = compute_fitness(objectives)
-            if new_fit < best_fit:
+            crash |= crashed
+            if new_fit < best_fit or crashed:
                 best_fit = new_fit
                 best_cfg = neighbor_cfg
                 current_cfg = neighbor_cfg
                 best_obj = dict(objectives)
                 best_seed_base = neighbor_seed
+                if crashed:
+                    best_fit = -1000
+                    print("CAR CRASHED!!!")
+                    break
 
         history.append(best_fit)
+        print(f"Iteration {i}: {best_fit}")
 
-        if best_fit < 0:
+        if crash:
             print(f"💥 Collision: scenario {i}")
-            record_video_episode(env_id, best_cfg, policy, defaults, best_seed_base, out_dir="videos")
+            # record_video_episode(env_id, best_cfg, policy, defaults, best_seed_base, out_dir="videos")
             break
-
+    record_video_episode(env_id, best_cfg, policy, defaults, best_seed_base, out_dir="videos")
     return {
         "best_cfg": best_cfg,
         "best_objectives": best_obj,

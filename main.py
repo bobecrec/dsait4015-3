@@ -9,8 +9,15 @@ def main():
     policy = load_pretrained_policy("agents/model")
     env, defaults = make_env(env_id)
 
-    crashes = hill_climb(env_id, base_cfg, param_spec, policy, defaults, neighbors_per_iter=1, iterations=50)
-    print(crashes)
+    crashes = hill_climb(env_id, base_cfg, param_spec, policy, defaults, neighbors_per_iter=2, iterations=5, seed=1)
+    crashed = 0
+    # for i in range(10):
+    #     crashes = hill_climb(env_id, base_cfg, param_spec, policy, defaults, neighbors_per_iter=2, iterations=5, seed=i*13+4)
+    #     print(crashes)
+    #     if crashes['crashed']:
+    #         crashed += 1
+
+    print("CAR CRASHED ", crashed)
     # search = RandomSearch(env_id, base_cfg, param_spec, policy, defaults)
     # crashes = search.run_search(n_scenarios=50, seed=11)
 
