@@ -9,7 +9,7 @@ def main():
     policy = load_pretrained_policy("agents/model")
     env, defaults = make_env(env_id)
 
-    crashes = hill_climb(env_id, base_cfg, param_spec, policy, defaults, neighbors_per_iter=2, iterations=5, seed=1)
+    crashes = hill_climb(env_id, base_cfg, param_spec, policy, defaults, neighbors_per_iter=5, iterations=10, seed=9653893457)
     crashed = 0
     # for i in range(10):
     #     crashes = hill_climb(env_id, base_cfg, param_spec, policy, defaults, neighbors_per_iter=2, iterations=5, seed=i*13+4)

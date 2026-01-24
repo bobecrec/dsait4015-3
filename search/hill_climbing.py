@@ -40,6 +40,8 @@ def time_to_crash(x, y, vx, vy, v, carx, cary, w, l):
     # Handle zero velocity
     if v < 1e-6:
         return float("inf")
+    if vx - 1 < 1e-3 and vy < 1e-3:
+        return float("inf")
 
     # Normalize velocity direction
     vx_norm = vx / v
@@ -96,6 +98,7 @@ def compute_objectives_from_time_series(time_series: List[Dict[str, Any]]) -> Di
     max_neighboring_cars_ahead = 0
     avg_neighbouring_cars_ahead = 0
     min_crash_time = float('inf')
+    avg_crash_time = 0
 
     for frame in time_series:
         if frame.get("crashed", False):
@@ -116,9 +119,9 @@ def compute_objectives_from_time_series(time_series: List[Dict[str, Any]]) -> Di
         if not others:
             continue
 
+        min_crash_this_frame = float('inf')
         # Count cars in neighboring lanes that are ahead of ego
         neighboring_cars_ahead = 0
-
         for o in others:
             pos_o = o.get("pos", None)
             lane_o = o.get("lane_id", None)
@@ -142,8 +145,12 @@ def compute_objectives_from_time_series(time_series: List[Dict[str, Any]]) -> Di
                 min_dist = d
 
             crash = time_to_crash(pos_ego[0], pos_ego[1], vx, vy, ego.get("speed"), pos_o[0], pos_o[1], o.get("width"), o.get("length"))
-            if crash < min_crash_time:
-                min_crash_time = crash
+            if crash < min_crash_this_frame:
+                min_crash_this_frame = crash
+
+        avg_crash_time += min_crash_this_frame
+        if min_crash_this_frame < min_crash_time:
+            min_crash_time = min_crash_this_frame
 
         avg_neighbouring_cars_ahead += neighboring_cars_ahead
         # Track the maximum number of neighboring cars ahead across all frames
@@ -155,7 +162,8 @@ def compute_objectives_from_time_series(time_series: List[Dict[str, Any]]) -> Di
         "min_euclidean_distance": min_dist,
         "max_neighboring_cars_ahead": max_neighboring_cars_ahead,
         "avg_neighboring_cars_ahead": float(avg_neighbouring_cars_ahead) / len(time_series),
-        "min_crash_time": min_crash_time
+        "min_crash_time": min_crash_time,
+        "avg_crash_time": avg_crash_time / len(time_series)
     }
 
 
@@ -177,7 +185,7 @@ def compute_fitness(objectives: Dict[str, Any]) -> float:
     if objectives["crashed"] == 1:
         fitness = - 1.0
     else:
-        fitness = objectives["min_euclidean_distance"]
+        fitness = objectives['avg_crash_time']
     return fitness
 
 
