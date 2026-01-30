@@ -70,7 +70,7 @@ def main():
     # print("HC success rate:",
     #       hc_budget_summary["success"]["success_rate_per_run"])
     # eval_random_search(random_search_instance=search, n_scenarios=50,n_eval=1, seed=11)
-    eval_hill_climbing_early_stop(env_id, base_cfg, param_spec, policy, defaults, 50, neighbors_per_iter=5, iterations=10)
+    eval_hill_climbing_early_stop(env_id, base_cfg, param_spec, policy, defaults, 2, neighbors_per_iter=2, iterations=10)
 
 
 

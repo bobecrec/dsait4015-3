@@ -1,0 +1,33 @@
+{
+  "method": "hc",
+  "n_scenarios": 5,
+  "failure_discovery": {
+    "found_collision": true,
+    "num_crashes": 1,
+    "success_rate": "1 / 5",
+    "first_crash_iteration": 4,
+    "min_distance_if_no_collision": null
+  },
+  "scenario_characteristics": {
+    "num_distinct_crash_configs": 1,
+    "most_problematic_config": {
+      "lanes_count": 10,
+      "vehicles_count": 57,
+      "initial_spacing": 2.0832250823595104,
+      "ego_spacing": 3.9287311171231125,
+      "initial_lane_id": 2,
+      "duration": 30,
+      "simulation_frequency": 25,
+      "policy_frequency": 5
+    }
+  },
+  "efficiency": {
+    "runtime_s": 136.98729586601257,
+    "total_evaluations": 5,
+    "iterations_to_first_crash": 4
+  },
+  "diagnostics": {
+    "avg_fitness_no_crash": Infinity,
+    "avg_min_distance_no_crash": 13.630014945894338
+  }
+}

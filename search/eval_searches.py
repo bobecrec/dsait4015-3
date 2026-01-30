@@ -552,13 +552,17 @@ def eval_random_search(random_search_instance: RandomSearch, n_scenarios=50, n_e
 
 
 def eval_hill_climbing_early_stop(env_id, base_cfg, param_spec, policy, defaults, max_scenarios, neighbors_per_iter=2,
-                                  iterations=5, out_path="eval_outputs/hc_summary.json"):
+                                  iterations=5, out_dir="eval_outputs", out_file="hc_summary.json"):
     iteration_crashes = []
     min_distances_no_crash = []
     crash_configs = []
     fitness_no_crash = []
     total_runs = 0
     total_time = 0
+    first_crash_iteration: int | None = None
+
+    cur_dir = os.path.dirname(os.path.realpath(__file__))
+
     for i in range(int(np.ceil(max_scenarios / neighbors_per_iter))):
         if total_runs >= max_scenarios:
             break
@@ -574,7 +578,10 @@ def eval_hill_climbing_early_stop(env_id, base_cfg, param_spec, policy, defaults
 
             config = entry["cfg"]
             if crash:
-                iteration_crashes.append((entry["iteration"] + 1) * (entry["neighbor"] + 1))
+                iteration = (entry["iteration"] + 1) * (entry["neighbor"] + 1)
+                iteration_crashes.append(iteration)
+                if first_crash_iteration is None:
+                    first_crash_iteration = iteration
                 crash_configs.append(config)
             else:
                 min_distances_no_crash.append(entry["obj"]["min_euclidean_distance"])
@@ -582,8 +589,6 @@ def eval_hill_climbing_early_stop(env_id, base_cfg, param_spec, policy, defaults
 
     success_rate = f"{len(iteration_crashes)} / {total_runs}"
     found_collision = len(iteration_crashes) > 0
-
-    first_crash_iteration = min(iteration_crashes).pop() if found_collision else None
 
     min_distance_no_crash = (
         min(min_distances_no_crash) if min_distances_no_crash else None
@@ -637,7 +642,11 @@ def eval_hill_climbing_early_stop(env_id, base_cfg, param_spec, policy, defaults
         },
     }
 
-    with open(out_path, "w") as f:
+    # output
+    if not os.path.isdir(os.path.join(os.path.dirname(cur_dir), out_dir)):
+        os.mkdir(os.path.join(os.path.dirname(cur_dir), out_dir))
+
+    with open(os.path.join(os.path.dirname(cur_dir), out_dir, out_file), "w") as f:
         json.dump(summary, f, indent=2)
 
     return summary
