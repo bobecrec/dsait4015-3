@@ -112,8 +112,8 @@ def compute_objectives_from_time_series(time_series: List[Dict[str, Any]]) -> Di
         if pos_ego is None or ego_lane is None:
             continue
 
-        vy = 1 / (np.tan(ego.get("heading", 0))**2+ 1)
-        vx = np.sqrt(1 - vy**2)
+        vy = 1 / (np.tan(ego.get("heading", 0)) ** 2 + 1)
+        vx = np.sqrt(1 - vy ** 2)
 
         others = frame.get("others", [])
         if not others:
@@ -144,7 +144,8 @@ def compute_objectives_from_time_series(time_series: List[Dict[str, Any]]) -> Di
             if d < min_dist:
                 min_dist = d
 
-            crash = time_to_crash(pos_ego[0], pos_ego[1], vx, vy, ego.get("speed"), pos_o[0], pos_o[1], o.get("width"), o.get("length"))
+            crash = time_to_crash(pos_ego[0], pos_ego[1], vx, vy, ego.get("speed"), pos_o[0], pos_o[1], o.get("width"),
+                                  o.get("length"))
             if crash < min_crash_this_frame:
                 min_crash_this_frame = crash
 
@@ -228,7 +229,7 @@ def mutate_config(
             new_v = int(rng.integers(s["min"], s["max"] + 1))
     else:
         new_v = float(rng.normal(s["min"], s["max"]))
-        if abs(new_v - float(mod_cfg[k])) < abs(s["min"] - s["max"])/100:
+        if abs(new_v - float(mod_cfg[k])) < abs(s["min"] - s["max"]) / 100:
             new_v = float(rng.uniform(s["min"], s["max"]))
 
     mod_cfg[k] = new_v
@@ -332,6 +333,7 @@ def hill_climb(
 
     history = [best_fit]
 
+    log_for_eval = []
     # TODO (students): implement HC loop
     crash = False
     for i in tqdm(range(iterations), desc="Running Hill Climbing Iterations"):
@@ -342,6 +344,9 @@ def hill_climb(
             objectives = compute_objectives_from_time_series(ts)
             new_fit = compute_fitness(objectives)
             crash |= crashed
+            log_for_eval.append(
+                {"iteration": i, "neighbor": j, "crashed": crashed, "obj": objectives, "fitness": new_fit,
+                 "cfg": copy.deepcopy(neighbor_cfg), "seed": neighbor_seed})
             if new_fit < best_fit or crashed:
                 best_fit = new_fit
                 best_cfg = neighbor_cfg
@@ -361,13 +366,15 @@ def hill_climb(
             # record_video_episode(env_id, best_cfg, policy, defaults, best_seed_base, out_dir="videos")
             break
     record_video_episode(env_id, best_cfg, policy, defaults, best_seed_base, out_dir="videos")
+    # print(best_cfg)
     return {
         "best_cfg": best_cfg,
         "best_objectives": best_obj,
         "best_fitness": best_fit,
         "best_seed_base": best_seed_base,
         "history": history,
-        "crashed": best_fit < 0
+        "crashed": best_fit < 0,
+        "eval_log": log_for_eval
     }
 
     # - generate neighbors
