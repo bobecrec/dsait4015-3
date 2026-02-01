@@ -366,7 +366,7 @@ def hill_climb(
             # record_video_episode(env_id, best_cfg, policy, defaults, best_seed_base, out_dir="videos")
             break
     record_video_episode(env_id, best_cfg, policy, defaults, best_seed_base, out_dir="videos")
-    print(best_cfg)
+    # print(best_cfg)
     return {
         "best_cfg": best_cfg,
         "best_objectives": best_obj,
