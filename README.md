@@ -238,6 +238,38 @@ def main():
 if __name__ == "__main__":
     main()
  ```
+## Running HIll Climbig Algorithm
+To perform a single run of our early-stop Hill-Climbing algorithm, you need to run the following command:
+```bash 
+python main.py
+```
+This will perform a single run of the algorithm which will give you one scenario where a crash occurred, if it manages to find one, alongside a log of all the scenarios it ran and statistics about each one of them.
+
+### Recreating Paper Results
+To recreate the results from the paper and obtain the same files and statistics, you simply need to uncommend the respective method in the ``main.py`` main method.
+If you want to obtain the evaluation statistics for random search, uncomment the lines 
+```python
+# eval_random_search(random_search_instance=search, n_scenarios=50,n_eval=1, seed=11)
+```
+If you want to run the evaluation of the Hill-Climbing search over 10 runs of 5 iterations with 2 neighbors, uncomment 
+```python
+# agg = run_hc_multi_analysis(
+    #     hill_climb_fn=hill_climb,
+    #     env_id=env_id,
+    #     base_cfg=base_cfg,
+    #     param_spec=param_spec,
+    #     policy=policy,
+    #     defaults=defaults,
+    #     seeds=[4, 17, 30, 43, 56, 69, 82, 95, 108, 121],
+    #     neighbors_per_iter=2,
+    #     iterations=5,
+    #     out_dir="eval_outputs/hc_multi_analysis",
+    # )
+    #
+    # print(agg)
+```
+
+
 
 ## License
 This project is provided for educational use in the *Software Engineering and Testing for AI Systems* course (DSAIT4015).  
