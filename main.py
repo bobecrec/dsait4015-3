@@ -25,15 +25,15 @@ def main():
     #         crashed += 1
     #
     # print("CAR CRASHED ", crashed)
-    # search = RandomSearch(env_id, base_cfg, param_spec, policy, defaults)
+    search = RandomSearch(env_id, base_cfg, param_spec, policy, defaults)
     # crashes = search.run_search(n_scenarios=50, seed=11)
 
     # print(f"✅ Found {len(c
     # rashes)} crashes.")
     # if crashes:
     #    print(crashes)
-    # eval_random_search(random_search_instance=search, n_scenarios=50,n_eval=1, seed=11)
-    # eval_hill_climbing_early_stop(env_id, base_cfg, param_spec, policy, defaults, 50, neighbors_per_iter=5, iterations=10)
+    eval_random_search(random_search_instance=search, n_scenarios=50,n_eval=1, seed=11)
+    eval_hill_climbing_early_stop(env_id, base_cfg, param_spec, policy, defaults, 50, neighbors_per_iter=5, iterations=10)
 
 
 
