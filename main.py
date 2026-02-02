@@ -21,10 +21,10 @@ def main():
 
     search = RandomSearch(env_id, base_cfg, param_spec, policy, defaults)
     # run random search on its own
-    # crashes = search.run_search(n_scenarios=50, seed=11)
+    # crashes = search.run_search(n_scenarios=50, seed=1123)
 
     # analysis of random search performance
-    # eval_random_search(random_search_instance=search, n_scenarios=50,n_eval=1, seed=11)
+    eval_random_search(random_search_instance=search, n_scenarios=50, n_eval=1, seed=121)
 
     # analysis of hill climb with early stop
     # eval_hill_climbing_early_stop(env_id, base_cfg, param_spec, policy, defaults, 50, neighbors_per_iter=5, iterations=10)
@@ -42,22 +42,9 @@ def main():
     #     iterations=5,
     #     out_dir="eval_outputs/hc_multi_analysis",
     # )
-    #
+
     # print(agg)
 
-    # crashed = 0
-    # iterations_to_crash = []
-    # configs = []
-    # for i in range(10):
-    #     crashes = hill_climb(env_id, base_cfg, param_spec, policy, defaults, neighbors_per_iter=5, iterations=5, seed=i*13+4)
-    #     if crashes['crashed']:
-    #         crashed += 1
-    #         iterations_to_crash.append(len(crashes["eval_log"]))
-    #         configs.append()
-    #
-    #
-    # print(iterations_to_crash)
-    # print("CAR CRASHED ", crashed)
 
 
 if __name__ == "__main__":

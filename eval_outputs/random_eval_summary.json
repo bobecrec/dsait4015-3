@@ -1,23 +1,23 @@
 {
   "method": "random_search",
-  "seed": 11,
+  "seed": 121,
   "n_scenarios": 50,
   "n_eval": 1,
   "failure_discovery": {
     "found_collision": true,
     "num_crashes": 2,
     "success_rate": "2 / 50",
-    "first_crash_iteration": 6,
+    "first_crash_iteration": 13,
     "min_distance_if_no_collision": null
   },
   "scenario_characteristics": {
     "num_distinct_crash_configs": 2,
     "most_problematic_config": {
       "lanes_count": 10,
-      "vehicles_count": 59,
-      "initial_spacing": 1.420292575985202,
-      "ego_spacing": 2.6611910885956833,
-      "initial_lane_id": 8,
+      "vehicles_count": 23,
+      "initial_spacing": 1.8860246197556954,
+      "ego_spacing": 1.7183883151417896,
+      "initial_lane_id": 5,
       "duration": 30,
       "simulation_frequency": 25,
       "policy_frequency": 5
@@ -25,20 +25,20 @@
     "configs": [
       {
         "lanes_count": 10,
-        "vehicles_count": 59,
-        "initial_spacing": 1.420292575985202,
-        "ego_spacing": 2.6611910885956833,
-        "initial_lane_id": 8,
+        "vehicles_count": 23,
+        "initial_spacing": 1.8860246197556954,
+        "ego_spacing": 1.7183883151417896,
+        "initial_lane_id": 5,
         "duration": 30,
         "simulation_frequency": 25,
         "policy_frequency": 5
       },
       {
-        "lanes_count": 8,
-        "vehicles_count": 43,
-        "initial_spacing": 3.0181906152657194,
-        "ego_spacing": 3.3488248533909575,
-        "initial_lane_id": 5,
+        "lanes_count": 9,
+        "vehicles_count": 20,
+        "initial_spacing": 2.3182822635199494,
+        "ego_spacing": 3.8725595770566414,
+        "initial_lane_id": 7,
         "duration": 30,
         "simulation_frequency": 25,
         "policy_frequency": 5
@@ -46,14 +46,14 @@
     ]
   },
   "efficiency": {
-    "runtime_s": 644.4430286884308,
+    "runtime_s": 347.99251317977905,
     "total_evaluations": 50,
-    "iterations_to_first_crash": 6
+    "iterations_to_first_crash": 13
   },
   "diagnostics": {
-    "avg_fitness_no_crash": Infinity,
-    "avg_min_distance_no_crash": 9.076630859879012,
-    "min_distance_no_crash": 3.999946420833863,
-    "min_fitness_no_crash": 0.6123641592278991
+    "avg_fitness_no_crash": 13.606513648115795,
+    "avg_min_distance_no_crash": 10.286129977986521,
+    "min_distance_no_crash": 4.000193937343055,
+    "min_fitness_no_crash": 4.468079385577057
   }
 }

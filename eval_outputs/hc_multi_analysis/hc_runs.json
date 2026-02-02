@@ -1,44 +1,42 @@
 [
   {
     "seed": 4,
-    "runtime_s": 199.90809178352356,
-    "n_evals": 5,
-    "n_unique_cfgs": 5,
-    "unique_ratio": 1.0,
+    "runtime_s": 171.6596782207489,
+    "n_evals": 10,
+    "n_unique_cfgs": 9,
+    "unique_ratio": 0.9,
+    "n_crashes": 0,
+    "first_crash_eval": null,
+    "min_distance_no_crash": 3.9837305378545254,
+    "min_fitness_no_crash": 4.414137906157276,
+    "crash_cfgs": []
+  },
+  {
+    "seed": 17,
+    "runtime_s": 107.78928279876709,
+    "n_evals": 8,
+    "n_unique_cfgs": 7,
+    "unique_ratio": 0.875,
     "n_crashes": 1,
-    "first_crash_eval": 5,
-    "min_distance_no_crash": 5.370350490797521,
-    "min_fitness_no_crash": 1.458363241387213,
+    "first_crash_eval": 8,
+    "min_distance_no_crash": 4.509845381284264,
+    "min_fitness_no_crash": 5.385186608625918,
     "crash_cfgs": [
       {
-        "lanes_count": 10,
-        "vehicles_count": 57,
-        "initial_spacing": 2.0832250823595104,
-        "ego_spacing": 3.9287311171231125,
-        "initial_lane_id": 2,
+        "lanes_count": 6,
+        "vehicles_count": 60,
+        "initial_spacing": 3.6417726775463746,
+        "ego_spacing": 2.6732336420970766,
+        "initial_lane_id": 5,
         "duration": 30,
         "simulation_frequency": 25,
         "policy_frequency": 5
       }
-    ],
-    "fingerprint": 814841999862756128
-  },
-  {
-    "seed": 17,
-    "runtime_s": 346.55363035202026,
-    "n_evals": 10,
-    "n_unique_cfgs": 10,
-    "unique_ratio": 1.0,
-    "n_crashes": 0,
-    "first_crash_eval": null,
-    "min_distance_no_crash": 7.688210595351697,
-    "min_fitness_no_crash": 0.5423923602816361,
-    "crash_cfgs": [],
-    "fingerprint": 3971847302544610321
+    ]
   },
   {
     "seed": 30,
-    "runtime_s": 18.64979839324951,
+    "runtime_s": 7.793842315673828,
     "n_evals": 1,
     "n_unique_cfgs": 1,
     "unique_ratio": 1.0,
@@ -51,137 +49,129 @@
         "lanes_count": 3,
         "vehicles_count": 18,
         "initial_spacing": 2.4309814939961503,
-        "ego_spacing": 10.449675680854963,
+        "ego_spacing": 4.0,
         "initial_lane_id": 1,
         "duration": 30,
         "simulation_frequency": 25,
         "policy_frequency": 5
       }
-    ],
-    "fingerprint": 1081366366348203442
+    ]
   },
   {
     "seed": 43,
-    "runtime_s": 266.70568013191223,
+    "runtime_s": 90.11667585372925,
     "n_evals": 10,
     "n_unique_cfgs": 10,
     "unique_ratio": 1.0,
     "n_crashes": 0,
     "first_crash_eval": null,
-    "min_distance_no_crash": 4.015031384154126,
-    "min_fitness_no_crash": 0.7097489225824425,
-    "crash_cfgs": [],
-    "fingerprint": 6578104711511670263
+    "min_distance_no_crash": 4.001315525566153,
+    "min_fitness_no_crash": 4.439167857796679,
+    "crash_cfgs": []
   },
   {
     "seed": 56,
-    "runtime_s": 166.683420419693,
-    "n_evals": 6,
-    "n_unique_cfgs": 6,
-    "unique_ratio": 1.0,
-    "n_crashes": 1,
-    "first_crash_eval": 6,
-    "min_distance_no_crash": 4.697348009618868,
-    "min_fitness_no_crash": 0.8406449434499245,
-    "crash_cfgs": [
-      {
-        "lanes_count": 9,
-        "vehicles_count": 45,
-        "initial_spacing": 1.1267577595463751,
-        "ego_spacing": 3.942403203307827,
-        "initial_lane_id": 3,
-        "duration": 30,
-        "simulation_frequency": 25,
-        "policy_frequency": 5
-      }
-    ],
-    "fingerprint": 7466483263202502880
+    "runtime_s": 104.99394273757935,
+    "n_evals": 10,
+    "n_unique_cfgs": 8,
+    "unique_ratio": 0.8,
+    "n_crashes": 0,
+    "first_crash_eval": null,
+    "min_distance_no_crash": 4.000614783284381,
+    "min_fitness_no_crash": 4.452198740405361,
+    "crash_cfgs": []
   },
   {
     "seed": 69,
-    "runtime_s": 223.52548360824585,
+    "runtime_s": 56.85101294517517,
     "n_evals": 10,
-    "n_unique_cfgs": 10,
-    "unique_ratio": 1.0,
+    "n_unique_cfgs": 8,
+    "unique_ratio": 0.8,
     "n_crashes": 0,
     "first_crash_eval": null,
-    "min_distance_no_crash": 4.000811882520929,
-    "min_fitness_no_crash": 0.34176224545780115,
-    "crash_cfgs": [],
-    "fingerprint": -2400824367790798302
+    "min_distance_no_crash": 4.000732188923838,
+    "min_fitness_no_crash": 4.476044310143412,
+    "crash_cfgs": []
   },
   {
     "seed": 82,
-    "runtime_s": 370.0822353363037,
+    "runtime_s": 163.7156388759613,
     "n_evals": 10,
-    "n_unique_cfgs": 10,
-    "unique_ratio": 1.0,
+    "n_unique_cfgs": 9,
+    "unique_ratio": 0.9,
     "n_crashes": 0,
     "first_crash_eval": null,
-    "min_distance_no_crash": 4.030107346205682,
-    "min_fitness_no_crash": 0.33157760092325006,
-    "crash_cfgs": [],
-    "fingerprint": 4932010087328326507
+    "min_distance_no_crash": 4.000713053537742,
+    "min_fitness_no_crash": 4.654778373241512,
+    "crash_cfgs": []
   },
   {
     "seed": 95,
-    "runtime_s": 140.9139473438263,
-    "n_evals": 7,
-    "n_unique_cfgs": 7,
+    "runtime_s": 47.905925989151,
+    "n_evals": 5,
+    "n_unique_cfgs": 5,
     "unique_ratio": 1.0,
     "n_crashes": 1,
-    "first_crash_eval": 7,
-    "min_distance_no_crash": 5.718817815526066,
-    "min_fitness_no_crash": 0.6452375321256653,
+    "first_crash_eval": 5,
+    "min_distance_no_crash": 4.045141256308316,
+    "min_fitness_no_crash": 4.498792676931769,
     "crash_cfgs": [
       {
         "lanes_count": 6,
-        "vehicles_count": 35,
+        "vehicles_count": 41,
         "initial_spacing": 4.609883599509351,
-        "ego_spacing": -9.852553099698596,
+        "ego_spacing": 1.0,
         "initial_lane_id": 3,
         "duration": 30,
         "simulation_frequency": 25,
         "policy_frequency": 5
       }
-    ],
-    "fingerprint": 4861020002412278346
+    ]
   },
   {
     "seed": 108,
-    "runtime_s": 157.00854063034058,
-    "n_evals": 7,
-    "n_unique_cfgs": 7,
-    "unique_ratio": 1.0,
+    "runtime_s": 90.0217924118042,
+    "n_evals": 6,
+    "n_unique_cfgs": 4,
+    "unique_ratio": 0.6666666666666666,
     "n_crashes": 1,
-    "first_crash_eval": 7,
-    "min_distance_no_crash": 4.0004591537344645,
-    "min_fitness_no_crash": 0.25841416985666416,
+    "first_crash_eval": 6,
+    "min_distance_no_crash": 4.000353745545034,
+    "min_fitness_no_crash": 4.496752913077948,
     "crash_cfgs": [
       {
         "lanes_count": 3,
-        "vehicles_count": 31,
-        "initial_spacing": 3.3452381987130475,
+        "vehicles_count": 52,
+        "initial_spacing": 5.0,
         "ego_spacing": 1.3537166708789223,
         "initial_lane_id": 2,
         "duration": 30,
         "simulation_frequency": 25,
         "policy_frequency": 5
       }
-    ],
-    "fingerprint": 2363403502209517206
+    ]
   },
   {
     "seed": 121,
-    "runtime_s": 246.67267179489136,
-    "n_evals": 10,
-    "n_unique_cfgs": 9,
-    "unique_ratio": 0.9,
-    "n_crashes": 0,
-    "first_crash_eval": null,
+    "runtime_s": 62.059366941452026,
+    "n_evals": 7,
+    "n_unique_cfgs": 7,
+    "unique_ratio": 1.0,
+    "n_crashes": 1,
+    "first_crash_eval": 7,
     "min_distance_no_crash": 4.00010439459577,
-    "min_fitness_no_crash": Infinity,
-    "crash_cfgs": [],
-    "fingerprint": 5692416011914885532
+    "min_fitness_no_crash": 4.471582434705016,
+    "crash_cfgs": [
+      {
+        "lanes_count": 8,
+        "vehicles_count": 40,
+        "initial_spacing": 1.3795042823094785,
+        "ego_spacing": 3.47278078346342,
+        "initial_lane_id": 4,
+        "duration": 30,
+        "simulation_frequency": 25,
+        "policy_frequency": 5
+      }
+    ]
   }
 ]

@@ -3,20 +3,20 @@
   "success_rate": 0.5,
   "first_crash_eval_stats": {
     "count": 5,
-    "mean": 5.2,
+    "mean": 5.4,
     "median": 6.0,
     "min": 1,
-    "max": 7
+    "max": 8
   },
-  "avg_runtime_s": 213.67034997940064,
-  "avg_unique_ratio": 0.99,
+  "avg_runtime_s": 90.2907159090042,
+  "avg_unique_ratio": 0.8941666666666667,
   "avg_crashes_per_run": 0.5,
   "most_common_crash_config_mode": {
-    "lanes_count": 3,
-    "vehicles_count": 57,
-    "initial_spacing": 2.0832250823595104,
-    "ego_spacing": 3.9287311171231125,
-    "initial_lane_id": 2,
+    "lanes_count": 6,
+    "vehicles_count": 60,
+    "initial_spacing": 3.6417726775463746,
+    "ego_spacing": 2.6732336420970766,
+    "initial_lane_id": 5,
     "duration": 30,
     "simulation_frequency": 25,
     "policy_frequency": 5

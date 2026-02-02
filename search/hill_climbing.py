@@ -37,11 +37,11 @@ from envs.highway_env_utils import run_episode, record_video_episode
 # 1) OBJECTIVES FROM TIME SERIES
 # ============================================================
 def time_to_crash(x, y, vx, vy, v, carx, cary, w, l):
-    # Handle zero velocity
+    # we return 100 instead of infinity to avoid numerical errors
     if v < 1e-6:
-        return float("inf")
-    if vx - 1 < 1e-3 and vy < 1e-3:
-        return float("inf")
+        return 100.0
+    if abs(vx) < 1e-3 and abs(vy) < 1e-3:
+        return 100.0
 
     # Normalize velocity direction
     vx_norm = vx / v
@@ -54,13 +54,11 @@ def time_to_crash(x, y, vx, vy, v, carx, cary, w, l):
     # Check if moving towards the car (dot product > 0)
     dot = dx * vx_norm + dy * vy_norm
     if dot <= 0:
-        return float("inf")
+        return 100.0 # will not crash, just return big number
 
     # Project velocity onto the vector to the car
-    # Then check distance to bounding box
-    # Simplified: use center-to-center distance minus half-dimensions
     distance = (dx ** 2 + dy ** 2) ** 0.5
-    collision_distance = ((w / 2) ** 2 + (l / 2) ** 2) ** 0.5  # Conservative estimate
+    collision_distance = ((w / 2) ** 2 + (l / 2) ** 2) ** 0.5  # bounding box is a circle
 
     if distance < collision_distance:
         return 0.0  # Already overlapping
@@ -112,8 +110,9 @@ def compute_objectives_from_time_series(time_series: List[Dict[str, Any]]) -> Di
         if pos_ego is None or ego_lane is None:
             continue
 
-        vy = 1 / (np.tan(ego.get("heading", 0)) ** 2 + 1)
-        vx = np.sqrt(1 - vy ** 2)
+        heading = ego.get("heading", 0)
+        vy = np.sin(heading)
+        vx = np.cos(heading)
 
         others = frame.get("others", [])
         if not others:
@@ -186,7 +185,7 @@ def compute_fitness(objectives: Dict[str, Any]) -> float:
     if objectives["crashed"] == 1:
         fitness = - 1.0
     else:
-        fitness = objectives['avg_crash_time']
+        fitness = 10 * objectives['min_crash_time'] + objectives['min_euclidean_distance']
     return fitness
 
 
@@ -223,14 +222,23 @@ def mutate_config(
 
     k = rng.choice(keys)
     s = param_spec[k]
+    
+    # gaussian noise centered on current value, with std proportional to range
+    current_val = mod_cfg.get(k, (s["min"] + s["max"]) / 2)
+    param_range = s["max"] - s["min"]
+    std = param_range * 0.4
+    
+    # Sample with Gaussian noise and clamp to bounds
+    new_v = rng.normal(current_val, std)
+    new_v = np.clip(new_v, s["min"], s["max"])
+    
     if s["type"] == "int":
-        new_v = int(rng.integers(s["min"], s["max"] + 1))
+        new_v = int(round(new_v))
+        # retry if same value
         if new_v == mod_cfg[k]:
-            new_v = int(rng.integers(s["min"], s["max"] + 1))
+            new_v = int(round(np.clip(rng.normal(current_val, std), s["min"], s["max"])))
     else:
-        new_v = float(rng.normal(s["min"], s["max"]))
-        if abs(new_v - float(mod_cfg[k])) < abs(s["min"] - s["max"]) / 100:
-            new_v = float(rng.uniform(s["min"], s["max"]))
+        new_v = float(new_v)
 
     mod_cfg[k] = new_v
 
@@ -320,7 +328,6 @@ def hill_climb(
     # TODO (students): choose initialization (base_cfg or random scenario)
     current_cfg = sample_random_config(base_cfg, param_spec, rng)
 
-    # Evaluate initial solution (seed_base used for reproducibility)
     seed_base = int(rng.integers(1e9))
     crashed, ts = run_episode(env_id, current_cfg, policy, defaults, seed_base)
     obj = compute_objectives_from_time_series(ts)
@@ -334,9 +341,32 @@ def hill_climb(
     history = [best_fit]
 
     log_for_eval = []
+    stalled = 0
     # TODO (students): implement HC loop
     crash = False
     for i in tqdm(range(iterations), desc="Running Hill Climbing Iterations"):
+        old_fit = best_fit
+        if stalled >= 3:
+            # Restart from a new random configuration - reset everything
+            current_cfg = sample_random_config(base_cfg, param_spec, rng)
+            restart_seed = int(rng.integers(1e9))
+            crashed, ts = run_episode(env_id, current_cfg, policy, defaults, restart_seed)
+            obj = compute_objectives_from_time_series(ts)
+            cur_fit = compute_fitness(obj)
+            # Reset best to the new random config
+            best_fit = cur_fit
+            best_cfg = copy.deepcopy(current_cfg)
+            best_obj = dict(obj)
+            best_seed_base = restart_seed
+            old_fit = best_fit
+            if crashed:
+                best_fit = -1000
+                crash = True
+                print("CAR CRASHED on restart!!!")
+                break
+            stalled = 0
+            print(f"Restarted at iteration {i} with fitness {cur_fit}")
+
         for j in range(neighbors_per_iter):
             neighbor_seed = int(rng.integers(1e9))
             neighbor_cfg = mutate_config(current_cfg, param_spec, rng)
@@ -353,19 +383,20 @@ def hill_climb(
                 current_cfg = neighbor_cfg
                 best_obj = dict(objectives)
                 best_seed_base = neighbor_seed
-                if crashed:
+                if crash:
                     best_fit = -1000
                     print("CAR CRASHED!!!")
                     break
+        if old_fit == best_fit:
+            stalled += 1
 
         history.append(best_fit)
         print(f"Iteration {i}: {best_fit}")
 
         if crash:
             print(f"💥 Collision: scenario {i}")
-            # record_video_episode(env_id, best_cfg, policy, defaults, best_seed_base, out_dir="videos")
+            record_video_episode(env_id, best_cfg, policy, defaults, best_seed_base, out_dir="videos")
             break
-    record_video_episode(env_id, best_cfg, policy, defaults, best_seed_base, out_dir="videos")
     # print(best_cfg)
     return {
         "best_cfg": best_cfg,
