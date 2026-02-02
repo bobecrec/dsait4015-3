@@ -54,7 +54,11 @@ def aggregate_runs(run_summaries: list[dict]) -> dict:
     success_runs = [r for r in run_summaries if r["n_crashes"] > 0]
     success_rate = len(success_runs) / max(1, n_runs)
 
-    first_crashes = [r["first_crash_eval"] for r in success_runs if r["first_crash_eval"] is not None]
+    first_crashes = [
+        r["first_crash_eval"]
+        for r in success_runs
+        if r["first_crash_eval"] is not None
+    ]
     first_crash_stats = {
         "count": len(first_crashes),
         "mean": float(np.mean(first_crashes)) if first_crashes else None,
@@ -63,6 +67,25 @@ def aggregate_runs(run_summaries: list[dict]) -> dict:
         "max": int(np.max(first_crashes)) if first_crashes else None,
     }
 
+    no_crash_distances = [
+        r["min_distance_no_crash"]
+        for r in run_summaries
+        if r["min_distance_no_crash"] is not None and np.isfinite(r["min_distance_no_crash"])
+    ]
+
+    no_crash_fitnesses = [
+        r["min_fitness_no_crash"]
+        for r in run_summaries
+        if r["min_fitness_no_crash"] is not None and np.isfinite(r["min_fitness_no_crash"])
+    ]
+
+    min_no_crash_distance_overall = (
+        float(np.min(no_crash_distances)) if no_crash_distances else None
+    )
+    min_no_crash_fitness_overall = (
+        float(np.min(no_crash_fitnesses)) if no_crash_fitnesses else None
+    )
+
     counters = defaultdict(Counter)
     all_crash_cfgs = []
     for r in run_summaries:
@@ -70,7 +93,11 @@ def aggregate_runs(run_summaries: list[dict]) -> dict:
             all_crash_cfgs.append(cfg)
             for k, v in cfg.items():
                 counters[k][v] += 1
-    most_common_crash_config_mode = {k: c.most_common(1)[0][0] for k, c in counters.items()} if counters else {}
+
+    most_common_crash_config_mode = (
+        {k: c.most_common(1)[0][0] for k, c in counters.items()}
+        if counters else {}
+    )
 
     return {
         "n_runs": n_runs,
@@ -79,6 +106,10 @@ def aggregate_runs(run_summaries: list[dict]) -> dict:
         "avg_runtime_s": float(np.mean([r["runtime_s"] for r in run_summaries])),
         "avg_unique_ratio": float(np.mean([r["unique_ratio"] for r in run_summaries])),
         "avg_crashes_per_run": float(np.mean([r["n_crashes"] for r in run_summaries])),
+
+        "min_no_crash_distance_overall": min_no_crash_distance_overall,
+        "min_no_crash_fitness_overall": min_no_crash_fitness_overall,
+
         "most_common_crash_config_mode": most_common_crash_config_mode,
     }
 
