@@ -239,7 +239,7 @@ if __name__ == "__main__":
     main()
  ```
 ## Running HIll Climbig Algorithm
-To perform a single run of our early-stop Hill-Climbing algorithm, you need to run the following command:
+To perform a single run of our early-stop Hill-Climbing algorithm, you need to uncomment the run hill_climb line from main and run the following command:
 ```bash 
 python main.py
 ```
